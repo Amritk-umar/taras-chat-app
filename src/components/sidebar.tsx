@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Id, Doc } from "../../convex/_generated/dataModel";
+import { Id } from "../../convex/_generated/dataModel";
 import { Search, Moon, Sun, Users, X, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SidebarSkeleton } from "./ui/skeleton-loader";

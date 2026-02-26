@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
-import { Trash2, Send, Loader2, Check, CheckCheck, AlertCircle } from "lucide-react";
+import { Trash2, Send, Check, CheckCheck, AlertCircle } from "lucide-react";
 import { ChatSkeleton } from "./ui/skeleton-loader";
 
 interface ChatAreaProps {
