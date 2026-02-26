@@ -1,101 +1,99 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Sidebar } from "@/components/sidebar";
+import { ChatArea } from "@/components/chat-area";
+import { Id } from "../../convex/_generated/dataModel";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
+import { ChevronLeft, MessageSquare } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [activeChat, setActiveChat] = useState<Id<"conversations"> | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<Id<"users"> | undefined>(undefined);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  /**
+   * Handles selecting a conversation.
+   * On mobile, this hides the sidebar and shows the ChatArea.
+   */
+  const handleSelectChat = (conversationId: Id<"conversations">, userId?: Id<"users">) => {
+    setActiveChat(conversationId);
+    if (userId) setSelectedUserId(userId);
+  };
+
+  /**
+   * Navigates back to the chat list on mobile.
+   */
+  const handleBack = () => {
+    setActiveChat(null);
+  };
+
+  return (
+    <main className="h-screen w-full bg-white dark:bg-slate-950 overflow-hidden transition-colors">
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+
+      <SignedIn>
+        <div className="flex h-full w-full">
+          
+          {/* --- VIEW 1: CHAT LIST (SIDEBAR) --- */}
+          {/* Hidden on mobile if a chat is active. Always visible on md+ screens. */}
+          <div className={`
+            ${activeChat ? "hidden" : "flex"} 
+            md:flex md:w-80 lg:w-96 flex-col border-r border-slate-200 dark:border-slate-800 h-full w-full
+          `}>
+            <Sidebar 
+              onSelectChat={handleSelectChat} 
+              selectedUserId={selectedUserId}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+
+          {/* --- VIEW 2: CONVERSATION (CHAT AREA) --- */}
+          {/* Visible on mobile only if a chat is active. Always visible on md+ screens. */}
+          <div className={`
+            ${activeChat ? "flex" : "hidden"} 
+            md:flex flex-1 flex-col h-full bg-slate-50 dark:bg-slate-900/50
+          `}>
+            {activeChat ? (
+              <div className="flex flex-col h-full overflow-hidden">
+                
+                {/* Mobile-only Header (WhatsApp Style Navigation) */}
+                <div className="md:hidden flex items-center px-4 py-3 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 gap-3">
+                  <button 
+                    onClick={handleBack}
+                    className="p-1 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-blue-600 transition-colors"
+                  >
+                    <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
+                  </button>
+                  <div className="font-bold text-slate-800 dark:text-slate-100">Conversation</div>
+                </div>
+
+                {/* Main Chat Interface */}
+                <div className="flex-1 overflow-hidden">
+                  <ChatArea conversationId={activeChat} />
+                </div>
+              </div>
+            ) : (
+              /* Desktop Landing View (Empty State) */
+              <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-white dark:bg-slate-950 transition-colors">
+                <div className="flex flex-col items-center max-w-sm">
+                  <div className="p-4 rounded-full bg-blue-50 dark:bg-slate-900 mb-6">
+                    <MessageSquare className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                    Tars Chat
+                  </h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Select a contact from the list to start messaging. 
+                    Your messages are synced in real-time.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </SignedIn>
+    </main>
   );
 }
